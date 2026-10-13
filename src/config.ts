@@ -1,5 +1,5 @@
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, resolve, sep } from "node:path";
 
 export type LinkSpec = {
   label: string;
@@ -42,7 +42,7 @@ export const linkSpecs: LinkSpec[] = [
 ];
 
 export function displayPath(path: string): string {
-  return path === homeDir || path.startsWith(`${homeDir}/`)
+  return path === homeDir || path.startsWith(`${homeDir}${sep}`)
     ? path.replace(homeDir, "~")
     : path;
 }

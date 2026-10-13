@@ -7,6 +7,10 @@ Claude Code.
 
 - [Bun](https://bun.sh/)
 - Codex e/ou Claude Code
+- [jq](https://jqlang.org/), usado pela statusline
+- No Windows, o Modo de Desenvolvedor ativado (ou terminal como administrador)
+  para criar os links de arquivo; diretórios usam junctions e não exigem
+  privilégio
 
 ## Estrutura
 

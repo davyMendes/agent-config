@@ -8,7 +8,7 @@ import {
   symlink,
   unlink,
 } from "node:fs/promises";
-import { dirname, join, relative } from "node:path";
+import { dirname, isAbsolute, join, relative } from "node:path";
 import {
   displayPath,
   homeDir,
@@ -40,6 +40,7 @@ const backupRoot = join(
   timestamp,
 );
 let createdBackup = false;
+const isWindows = process.platform === "win32";
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -74,9 +75,17 @@ async function inspectLink(spec: LinkSpec): Promise<LinkState> {
   }
 }
 
+// Junctions não exigem privilégio no Windows; links de arquivo continuam exigindo.
+function symlinkType(isDirectory: boolean): "junction" | "dir" | "file" {
+  if (!isDirectory) {
+    return "file";
+  }
+  return isWindows ? "junction" : "dir";
+}
+
 function backupPathFor(target: string): string {
   const relativeTarget = relative(homeDir, target);
-  if (relativeTarget.startsWith("..")) {
+  if (isAbsolute(relativeTarget) || relativeTarget.startsWith("..")) {
     throw new Error(`Destino fora do diretório pessoal: ${target}`);
   }
   return join(backupRoot, relativeTarget);
@@ -121,7 +130,7 @@ async function applyLink(spec: LinkSpec, state: LinkState): Promise<void> {
     await symlink(
       spec.source,
       spec.target,
-      sourceStats.isDirectory() ? "dir" : "file",
+      symlinkType(sourceStats.isDirectory()),
     );
   } catch (error) {
     if (await exists(spec.target)) {
@@ -129,6 +138,12 @@ async function applyLink(spec: LinkSpec, state: LinkState): Promise<void> {
     }
     if (backupPath) {
       await movePath(backupPath, spec.target);
+    }
+    if ((error as NodeJS.ErrnoException).code === "EPERM" && isWindows) {
+      throw new Error(
+        `Sem permissão para criar ${displayPath(spec.target)}. No Windows, ative o Modo de Desenvolvedor ou execute o terminal como administrador.`,
+        { cause: error },
+      );
     }
     throw error;
   }
@@ -141,10 +156,18 @@ async function applyLink(spec: LinkSpec, state: LinkState): Promise<void> {
   );
 }
 
+const missingSources: string[] = [];
 for (const spec of linkSpecs) {
   if (!(await exists(spec.source))) {
-    throw new Error(`Fonte ausente: ${displayPath(spec.source)}`);
+    missingSources.push(spec.source);
   }
+}
+
+if (missingSources.length > 0) {
+  for (const source of missingSources) {
+    console.error(`✗ Fonte ausente: ${displayPath(source)}`);
+  }
+  process.exit(1);
 }
 
 const states = await Promise.all(
