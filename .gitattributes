@@ -1,0 +1,2 @@
+# Scripts executados pelo bash precisam de LF em qualquer sistema.
+*.sh text eol=lf
