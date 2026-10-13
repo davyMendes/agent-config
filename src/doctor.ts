@@ -22,6 +22,19 @@ function fail(message: string): void {
   console.error(`✗ ${message}`);
 }
 
+// Lê um campo escalar do frontmatter, ignorando espaços e aspas ao redor.
+function readField(
+  frontmatter: string | undefined,
+  field: string,
+): string | undefined {
+  const value = frontmatter
+    ?.match(new RegExp(`^${field}:(.*)$`, "m"))?.[1]
+    ?.trim()
+    .replace(/^(["'])(.*)\1$/, "$2")
+    .trim();
+  return value || undefined;
+}
+
 if (process.versions.bun) {
   ok(`Bun ${process.versions.bun}`);
 } else {
@@ -90,8 +103,8 @@ try {
     try {
       const content = await readFile(skillFile, "utf8");
       const frontmatter = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-      const name = frontmatter?.[1]
-        ?.match(/^name:\s*["']?([^"'\r\n]+)["']?\s*$/m)?.[1];
+      const name = readField(frontmatter?.[1], "name");
+      const description = readField(frontmatter?.[1], "description");
 
       if (!frontmatter) {
         fail(`${directory}: frontmatter ausente em SKILL.md`);
@@ -99,6 +112,8 @@ try {
         fail(`${directory}: campo name ausente em SKILL.md`);
       } else if (name !== directory) {
         fail(`${directory}: name declarado como ${name}`);
+      } else if (!description) {
+        fail(`${directory}: campo description ausente em SKILL.md`);
       } else {
         ok(`skill ${directory}`);
       }
