@@ -82,7 +82,7 @@ Use a taxonomia abaixo como guia sem transformar o titulo em decoracao. Quando o
 | Correcao critica ou urgente | `🚑` |
 | Refatoracao interna | `🔨` |
 | Melhoria de estrutura ou formatacao | `🎨` |
-| Interface ou ajuste visual | `💄` |
+| Interface ou ajuste visual | `🎨` |
 | Desempenho | `🐎` |
 | Seguranca | `🔒` |
 | Testes adicionados ou atualizados | `✅` |
