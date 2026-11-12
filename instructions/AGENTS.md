@@ -26,6 +26,9 @@
 ## Outras regras
 
 - Não crie, edite, mova ou exclua arquivos de skill sem autorização explícita.
+- Nunca faça commit direto em `main` ou `master`, em nenhum projeto, sem
+  confirmação explícita do usuário; antes de commitar, confira a branch atual e,
+  se for uma delas, crie uma branch nova e informe o nome.
 - Em sandbox, não conclua que a credencial do `gh` é inválida só por
   `gh auth status`; verifique e execute fora do sandbox.
 - Em revisões de código, numere os achados a partir de 1 e mantenha a numeração
